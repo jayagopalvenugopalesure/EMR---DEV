@@ -19,3 +19,6 @@ comments string
 PARTITIONED BY(Inputdate string, flag STRING)
 stored as parquet
 LOCATION '/user/hadoop/cust_dev/';
+
+
+LOAD DATA local INPATH '/home/hadoop/Temp/userdata1.parquet' INTO TABLE Customer_dev PARTITION (Inputdate='2018-11-27', flag='Y');
