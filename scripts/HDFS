@@ -1,0 +1,1 @@
+hdfs dfs -copyFromLocal userdata1.parquet /user/hadoop/cust_dev/
