@@ -1,3 +1,6 @@
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
 create external table Customer_dev(
 reg_dttm string,
 id int,
