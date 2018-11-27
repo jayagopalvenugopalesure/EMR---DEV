@@ -1,0 +1,2 @@
+
+INSERT OVERWRITE TABLE Customer_dev PARTITION (Inputdate, flag) SELECT * FROM Customer_dev WHERE Inputdate='2018-02-02' and flag='Y';
