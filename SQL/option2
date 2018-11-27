@@ -1,2 +1,46 @@
+column#		column_name		hive_datatype
+=====================================================
+1		registration_dttm 	timestamp
+2		id 			int
+3		first_name 		string
+4		last_name 		string
+5		email 			string
+6		gender 			string
+7		ip_address 		string
+8		cc 			string
+9		country 		string
+10		birthdate 		string
+11		salary 			double
+12		title 			string
+13		comments 		string
+
+
+create external table Customer_dev(
+reg_dttm string,
+id int,
+first_name string,
+last_name string,
+email string,
+gender string,
+ip_address string,
+cc string,
+country string,
+birthdate string,
+salary double,
+title string,
+comments string
+)
+PARTITIONED BY(Inputdate string, flag STRING)
+stored as parquet
+LOCATION '/user/hadoop/cust_dev/';
+
+LOAD DATA local INPATH '/home/hadoop/Temp/userdata1.parquet' INTO TABLE Customer_dev PARTITION (Inputdate='2018-11-27', flag='Y');
+LOAD DATA local INPATH '/home/hadoop/Temp/userdata2.parquet' INTO TABLE Customer_dev PARTITION (Inputdate='2018-11-26', flag='Y');
+LOAD DATA local INPATH '/home/hadoop/Temp/userdata2.parquet' INTO TABLE Customer_dev PARTITION (Inputdate='2018-09-02', flag='N');
+LOAD DATA local INPATH '/home/hadoop/Temp/userdata1.parquet' INTO TABLE Customer_dev PARTITION (Inputdate='2018-02-02', flag='Y');
+
+show partitions Customer_dev
+ALTER TABLE Customer_dev DROP PARTITION (Inputdate='2018-09-02', flag='N') PURGE;
+
 
 INSERT OVERWRITE TABLE Customer_dev PARTITION (Inputdate, flag) SELECT * FROM Customer_dev WHERE Inputdate='2018-02-02' and flag='Y';
