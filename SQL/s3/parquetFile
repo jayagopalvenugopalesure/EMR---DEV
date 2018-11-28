@@ -1,0 +1,21 @@
+create external table Customer_dev(
+age int,
+job string,
+marital string,
+education string,
+default string,
+balance int,
+housing String,
+loan String,
+contact String,
+day  int,
+month String,
+duration int,
+campaign int,
+pdays int,
+previous int,
+poutcome string,
+y string
+)
+stored as parquet
+LOCATION 's3://esure-emr-dev-jayagopal/input-parquet/';
