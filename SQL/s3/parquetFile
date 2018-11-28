@@ -19,3 +19,10 @@ y string
 )
 stored as parquet
 LOCATION 's3://esure-emr-dev-jayagopal/input-parquet/';
+
+
+
+INSERT OVERWRITE TABLE Customer_dev SELECT * FROM Customer_dev WHERE balance = 1787;
+
+
+dataFrame.write.repartitions(1).format("parquet").mode("append").save("temp.parquet")
