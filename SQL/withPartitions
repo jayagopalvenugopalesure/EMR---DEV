@@ -1,0 +1,18 @@
+Drop table Customer_dev_Partition;
+create external table Customer_dev_Partition(
+age int,
+job string,
+marital string,
+education string,
+balance int,
+housing String,
+loan String,
+contact String,
+day  int
+)
+PARTITIONED BY(month string, y STRING)
+stored as parquet
+LOCATION 's3://esure-emr-dev-jayagopal/partitionparquet2/';
+
+MSCK REPAIR TABLE Customer_dev_Partition;
+
