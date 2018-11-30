@@ -16,3 +16,11 @@ LOCATION 's3://esure-emr-dev-jayagopal/partitionparquet2/';
 
 MSCK REPAIR TABLE Customer_dev_Partition;
 
+SET hive.exec.scratchdir=/tmp/hive/;
+SET hive.exec.stagingdir=/tmp/hive/;
+
+--Need this set commands 
+
+INSERT OVERWRITE TABLE Customer_dev_Partition PARTITION (month, y) SELECT * from Customer_dev_Partition WHERE month = 'apr' and y = 'no';
+
+***Needs to have the partition column in the were clause
