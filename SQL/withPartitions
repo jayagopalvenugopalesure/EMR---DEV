@@ -24,3 +24,5 @@ SET hive.exec.stagingdir=/tmp/hive/;
 INSERT OVERWRITE TABLE Customer_dev_Partition PARTITION (month, y) SELECT * from Customer_dev_Partition WHERE month = 'apr' and y = 'no';
 
 ***Needs to have the partition column in the were clause
+
+spark.sql("SET hive.exec.scratchdir=/tmp/hive/;SET hive.exec.stagingdir=/tmp/hive/;SET hive.exec.dynamic.partition = true;SET hive.exec.dynamic.partition.mode = nonstrict;INSERT OVERWRITE TABLE Customer_dev_Partition PARTITION (month, y) SELECT * from Customer_dev_Partition WHERE month = 'jul' and y = 'no' and job not in ('services')"
