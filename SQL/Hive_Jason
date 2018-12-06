@@ -1,0 +1,16 @@
+
+
+CREATE EXTERNAL TABLE ext_customer_activity_level_1_json(
+  id int , 
+  source_filename string , 
+  creation_date string , 
+  dataset_id string , 
+  environment_id string , 
+  event_id string , 
+  payload struct<data:struct<document_id:string,document_type:string,message:string,master_customer_id:string,policy_id:string,error:string,user_name:string,details:string>,header:struct<actor_id:string,actor_type:string,brand_code:string,event_origin:string,event_timestamp:string,event_type:string,source_id:string,source_version:string>,payload_version:string,status:struct<status_code:int,status_message:string>> , 
+  duplicate_count int )
+PARTITIONED BY ( 
+  partition_date string)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS TEXTFILE
+LOCATION 's3://esure-emr-dev-jayagopal/customer_activity_level_1/customer_activity_level_1_json/'
