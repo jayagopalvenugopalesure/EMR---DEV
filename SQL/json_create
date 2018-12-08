@@ -1,0 +1,17 @@
+MSCK REPAIR TABLE Customer_dev_json_Partition;
+
+create external table Customer_dev_json_Partition(
+age int,
+job string,
+marital string,
+education string,
+balance int,
+housing String,
+loan String,
+contact String,
+day  int
+)
+PARTITIONED BY(month string)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS TEXTFILE
+LOCATION 's3://esure-emr-dev-jayagopal/json_v2/';
