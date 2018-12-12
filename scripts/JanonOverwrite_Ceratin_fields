@@ -1,0 +1,90 @@
+************************ Writing file to s3 ********************************************
+
+import org.apache.commons.io.IOUtils
+import java.net.URL
+import java.nio.charset.Charset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.hive
+import spark.implicits._
+
+
+// Zeppelin creates and injects sc (SparkContext) and sqlContext (HiveContext or SqlContext)
+// So you don't need create them manually
+
+// load bank data
+val bankText = sc.parallelize(
+    IOUtils.toString(
+        new URL("https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv"),
+        Charset.forName("utf8")).split("\n"))
+
+case class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer, housing: String, loan: String, contact: String, day: Integer, month: String, y: String)
+
+val bank = bankText.map(s => s.split(";")).filter(s => s(0) != "\"age\"").map(
+    s => Bank(s(0).toInt, 
+            s(1).replaceAll("\"", ""),
+            s(2).replaceAll("\"", ""),
+            s(3).replaceAll("\"", ""),
+            s(5).replaceAll("\"", "").toInt,
+            s(6).replaceAll("\"", ""),
+            s(7).replaceAll("\"", ""),
+            s(8).replaceAll("\"", ""),
+            s(9).replaceAll("\"", "").toInt,
+            s(10).replaceAll("\"", ""),
+            s(16).replaceAll("\"", "")
+        )
+).toDF()
+
+//bank.registerTempTable("bank")
+bank.write.format("json").mode("overwrite").partitionBy("month").save("s3://esure-emr-dev-jayagopal/json_v2/")
+
+************************************************************************************************************************
+
+**************************** Reading the file and creating it as a DF **************************************************
+import org.apache.commons.io.IOUtils
+import java.net.URL
+import java.nio.charset.Charset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.hive
+import spark.implicits._
+
+val jsondf = spark.read.option("inferschema",true).option("basePath","s3://esure-emr-dev-jayagopal/json_v2/").json("s3://esure-emr-dev-jayagopal/json_v2/*/*.json")
+jsondf.show(false)
+
+**************************************************************************************************************************
+
+************************* Writing it into a temp folder and reading it as a Dataframe *************************
+
+import org.apache.commons.io.IOUtils
+import java.net.URL
+import java.nio.charset.Charset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.hive
+import spark.implicits._
+
+
+jsondf.createOrReplaceTempView("json_view")
+val dfNew=sqlContext.sql("select age, job, '****' , case when education = 'unknown' then '*****' else education end as education, balance, housing,loan, contact,month  from json_view where trim(education) in ('unknown')")
+dfNew.show()
+dfNew.write.format("json").partitionBy("month").mode("overwrite").save("s3://esure-emr-dev-jayagopal/json_v3/")
+*************************************************************************************************************************************
+************************************************** Overwriting the Main Table with Temp DF *****************************************
+import org.apache.commons.io.IOUtils
+import java.net.URL
+import java.nio.charset.Charset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.hive
+import spark.implicits._
+
+val jsondf_v3 = spark.read.option("inferschema",true).option("basePath","s3://esure-emr-dev-jayagopal/json_v3/").json("s3://esure-emr-dev-jayagopal/json_v3/*/*.json")
+jsondf_v3.show(false)
+jsondf_v3.write.format("json").partitionBy("month").mode("overwrite").save("s3://esure-emr-dev-jayagopal/json_v2/")
+
+********************************************************************************************************************************
