@@ -1,0 +1,37 @@
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.hive
+import spark.implicits._
+import scala.collection.mutable.ListBuffer
+
+
+case class schemasample(month: String, flag: String, mon: String, flg: String)
+case class schema1(mon: String, flg: String)
+
+sql("MSCK REPAIR TABLE Customer_dev_Partition")
+val inputDF = spark.sql("show partitions default.Customer_dev_Partition")
+
+inputDF.count()
+inputDF.show()
+val interDS = inputDF.withColumn("month", split(col("partition"), "/").getItem(0)).withColumn("flag", split(col("partition"), "/").getItem(1)).drop(col("partition")).withColumn("mon", split(col("month"), "=").getItem(1)).withColumn("flg", split(col("flag"), "=").getItem(1))	 .as[schemasample]
+					 
+val sampleList = new scala.collection.mutable.ListBuffer[schema1]()
+
+val finalList = interDS.map(row => {
+	val obj1 = schema1(row.mon, row.flg)
+	obj1
+	}).collect.toList
+	
+finalList.foreach(row => {
+    
+    val month = row.mon
+    val flg = row.flg
+    
+    sql("SET hive.exec.scratchdir=/tmp/hive/")
+    sql("SET hive.exec.stagingdir=/tmp/hive/")
+    sql("SET hive.exec.dynamic.partition = true")
+    sql("SET hive.exec.dynamic.partition.mode = nonstrict")
+    sql(s"INSERT OVERWRITE TABLE default.Customer_dev_Partition PARTITION (month, y) SELECT age,job,marital ,case when education = 'unknown' then '*****' else education end as education,balance,housing,loan,contact,day,month,y from default.Customer_dev_Partition WHERE month = '$month' and y = '$flg' and job not in ('services')")
+   
+})
